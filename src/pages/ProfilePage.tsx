@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { apiGet } from '../lib/api';
+import { apiGet, apiPut } from '../lib/api';
 import { User, Calendar, CheckCircle, XCircle, Edit } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -54,17 +54,18 @@ export const ProfilePage = () => {
 
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          full_name: fullName,
-          phone: phone || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
-
-      if (error) throw error;
+      // Update profile via backend API
+      const res = await apiPut('/profiles/me', {
+        full_name: fullName,
+        phone: phone || null,
+        updated_at: new Date().toISOString(),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message || 'Failed to update profile');
+      }
       setEditing(false);
+      // refresh profile by reloading page or re-fetching
       window.location.reload();
     } catch (error) {
       console.error('Error updating profile:', error);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase, Message } from '../../lib/supabase';
 import { Mail, MailOpen, Trash2 } from 'lucide-react';
+import { apiGet, apiPut, apiDelete } from '../../lib/api';
+import { Message } from '../../lib/supabase';
 
 export const MessageManagement = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -14,13 +15,12 @@ export const MessageManagement = () => {
   const fetchMessages = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setMessages(data || []);
+      const res = await apiGet('/messages');
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.success) throw new Error(json.message || 'Failed to fetch messages');
+      // Normalize IDs
+      const list = (json.data || []).map((m: any) => ({ ...m, id: m._id || m.id }));
+      setMessages(list || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
     } finally {
@@ -30,12 +30,11 @@ export const MessageManagement = () => {
 
   const handleMarkAsRead = async (messageId: string, isRead: boolean) => {
     try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ is_read: !isRead })
-        .eq('id', messageId);
-
-      if (error) throw error;
+      const res = await apiPut(`/messages/${messageId}`, { is_read: !isRead });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message || 'Failed to update message');
+      }
       fetchMessages();
     } catch (error) {
       console.error('Error updating message:', error);
@@ -46,12 +45,11 @@ export const MessageManagement = () => {
     if (!confirm('Are you sure you want to delete this message?')) return;
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .delete()
-        .eq('id', messageId);
-
-      if (error) throw error;
+      const res = await apiDelete(`/messages/${messageId}`);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.message || 'Failed to delete message');
+      }
       setSelectedMessage(null);
       fetchMessages();
     } catch (error) {
