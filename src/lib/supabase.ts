@@ -14,6 +14,12 @@ const supabase = {
     async signIn() {
       return { error: new Error('Supabase not configured') };
     },
+    async signInWithPassword() {
+      return { error: new Error('Supabase not configured') };
+    },
+    async signUp() {
+      return { error: new Error('Supabase not configured') };
+    },
     async signOut() {
       return { error: null };
     },
