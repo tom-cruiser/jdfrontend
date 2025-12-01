@@ -31,7 +31,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         let backendMode: string | null = null;
         if (import.meta.env.DEV) {
-          const m = await fetch('/api/auth/mode').then((r) => r.json()).catch(() => null);
+          const mres = await apiGet('/auth/mode').catch(() => null);
+          const m = mres ? await mres.json().catch(() => null) : null;
           if (m && m.data && m.data.db) backendMode = m.data.db;
           if (backendMode === 'mongo') {
             setPreferLocalLogin(true);
@@ -113,7 +114,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // check backend mode now (only in dev) before calling Supabase.
     if (hasSupabase && import.meta.env.DEV && !preferLocalLogin) {
       try {
-        const m = await fetch('/api/auth/mode').then((r) => r.json()).catch(() => null);
+        const mres = await apiGet('/auth/mode').catch(() => null);
+        const m = mres ? await mres.json().catch(() => null) : null;
         if (m && m.data && m.data.db === 'mongo') {
           setPreferLocalLogin(true);
         }
@@ -147,11 +149,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // Local dev fallback: call backend local-login endpoint which returns a dev token
-    const res = await fetch('/api/auth/local-login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
+    const res = await apiPost('/auth/local-login', { email, password });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       throw new Error(body?.message || body?.error || 'Local login failed');
@@ -185,11 +183,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // If backend-only/local mode is active, register via backend
     if ((import.meta.env.DEV && preferLocalLogin) || !hasSupabase) {
       try {
-        const res = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, full_name: fullName, phone }),
-        });
+        const res = await apiPost('/auth/register', { email, password, full_name: fullName, phone });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           throw new Error(body?.message || 'Registration failed');
