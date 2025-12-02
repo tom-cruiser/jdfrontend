@@ -65,15 +65,17 @@ export const BookingsPage = () => {
       const endTime = `${pad(end.getHours())}:${pad(end.getMinutes())}`;
 
       const coach = COACHES.find((c) => c.id === selectedCoachId) || null;
-      const res = await apiPost("/bookings", {
+      const payload: any = {
         court_id: selectedCourt.id,
         booking_date: selectedDate,
         start_time: selectedTime,
         end_time: endTime,
         notes: notes || null,
-        coach_id: selectedCoachId || null,
-        coach_name: coach ? coach.name : null,
-      });
+      };
+      if (selectedCoachId) payload.coach_id = selectedCoachId;
+      if (coach) payload.coach_name = coach.name;
+
+      const res = await apiPost("/bookings", payload);
       if (res.status === 401) {
         // Trigger global UI and give a helpful message
         try {
