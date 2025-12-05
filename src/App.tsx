@@ -9,7 +9,7 @@ import { ContactPage } from './pages/ContactPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminPage } from './pages/AdminPage';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ConfirmEmail } from './pages/ConfirmEmail';
+import ConfirmEmail from './pages/ConfirmEmail';
 import { ResetPassword } from './pages/ResetPassword';
 
 function App() {
