@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 
 export const SignUpForm = ({ onToggle }: { onToggle: () => void }) => {
@@ -10,7 +11,8 @@ export const SignUpForm = ({ onToggle }: { onToggle: () => void }) => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, user } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,8 +21,17 @@ export const SignUpForm = ({ onToggle }: { onToggle: () => void }) => {
 
     try {
       const res = await signUp(email, password, fullName, phone);
+      // If backend returned a token the AuthContext now sets the user/profile immediately.
+      // Redirect to profile/dashboard when the user is present.
+      if (user) {
+        navigate('/profile');
+        return;
+      }
+
+      // If a string was returned (legacy confirmation message), show a neutral message
+      // without instructing the user to check their email for confirmation.
       if (typeof res === 'string') {
-        setSuccessMessage(res);
+        setSuccessMessage('Registration successful. Please sign in.');
       }
     } catch (err: any) {
       setError(err?.message || 'Failed to create account. Please try again.');
