@@ -113,12 +113,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const body = await res.json();
         const token = body.data?.token;
         const profileBody = body.data?.profile || null;
-        // If backend returned a token (legacy), behave as before
+        // If backend returned a token, treat the user as signed in immediately.
         if (token) {
           localStorage.setItem('dev_token', token);
           localStorage.setItem('force_dev_auth', 'true');
           if (profileBody) {
-            setUser({ id: profileBody._1d || profileBody._id || profileBody.id } as unknown as any);
+            const id = (profileBody._id || profileBody.id) as string | undefined;
+            setUser({ id } as unknown as any);
             setProfile(profileBody as any);
           } else {
             const me = await apiGet('/profiles/me');
