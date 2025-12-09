@@ -135,8 +135,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
 
-        // Otherwise registration requires email confirmation — return helpful message
-        const msg = body?.message || 'Registration successful. Please check your email to confirm your account.';
+        // Otherwise registration requires email confirmation — but email sending is disabled.
+        // Return a neutral message prompting sign-in instead of instructing to check email.
+        const msg = body?.message || 'Registration successful. You can now sign in.';
         return msg;
       } catch (err: any) {
         throw new Error(err?.message || 'Registration failed');
