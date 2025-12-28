@@ -16,7 +16,7 @@ export async function apiFetch(path: string, opts: RequestInit = {}) {
       const isLocal = host.includes('localhost') || host.startsWith('127.') || host === '';
       if (!isLocal) {
         // Replace with your production backend URL
-        base = 'https://pdel-backend.onrender.com/api';
+        base = 'https://jdbackend-production-18d7.up.railway.app/api';
       }
     }
   } catch (e) {
